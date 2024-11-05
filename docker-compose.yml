@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  goaccess:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: goaccess
+    volumes:
+      - ./www:/var/www/html  # Monta el volumen para los informes de GoAccess
+      - /var/log/apache2:/var/log/apache2  # Monta el volumen para los registros de Apache en el contenedor GoAccess
+    entrypoint: >
+      /bin/sh -c "goaccess /var/log/apache2/access.log --log-format=COMBINED -a -o /var/www/html/informe.html && sleep 3600"
+    restart: always
+
+  apache:
+    image: httpd:latest
+    container_name: apache_server
+    ports:
+      - "8080:80"  # Mapea el puerto 80 del contenedor al puerto 8080 de la máquina host
+    volumes:
+      - ./www:/usr/local/apache2/htdocs  # Monta el volumen para servir el informe de GoAccess
+    restart: always
